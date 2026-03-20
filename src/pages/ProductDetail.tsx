@@ -14,7 +14,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { allSellerProducts, getSellerById } = useSeller();
-  const { products, isLoading, fetchError } = useAdmin();
+  const { products, isLoading, fetchError, orders } = useAdmin();
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
 
@@ -71,6 +71,19 @@ const ProductDetail = () => {
         };
       }
     }
+  }
+
+  // Calculate sold from Admin context orders to mimic Admin dashboard exactly
+  if (plant) {
+    let calculatedSold = 0;
+    orders.filter((o) => o.status === "Đã giao").forEach((order) => {
+      order.items.forEach((item) => {
+        if (item.plant.name === plant?.name) {
+          calculatedSold += item.quantity;
+        }
+      });
+    });
+    plant = { ...plant, sold: calculatedSold };
   }
 
   if (!plant) {
