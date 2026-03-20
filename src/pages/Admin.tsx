@@ -478,8 +478,8 @@ const Admin = () => {
                 ))}
               </div>
 
-              <div className="glass-card overflow-hidden">
-                <table className="w-full">
+              <div className="glass-card overflow-x-auto">
+                <table className="w-full min-w-[1100px]">
                   <thead>
                     <tr className="text-left text-muted-foreground text-sm bg-muted/30">
                       <th className="p-4">ID</th>
