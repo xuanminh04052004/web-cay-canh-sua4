@@ -63,7 +63,7 @@ const Catalog = () => {
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { allSellerProducts, allSellers, getSellerById } = useSeller();
-  const { products: plantsData, isLoading, fetchError } = useAdmin();
+  const { products: plantsData, isLoading, fetchError, orders } = useAdmin();
 
   if (isLoading) {
     return (
@@ -118,11 +118,26 @@ const Catalog = () => {
   }));
 
   // Combine products based on source filter
-  const allProducts = productSource === "greenie" 
+  const rawAllProducts = productSource === "greenie" 
     ? plantsData 
     : productSource === "sellers" 
     ? sellerProductsAsPlants 
     : [...plantsData, ...sellerProductsAsPlants];
+
+  // Calculate sold from Admin context orders to mimic Admin dashboard exactly
+  const productSalesMap = new Map<string, number>();
+  orders.filter((o) => o.status === "Đã giao").forEach((order) => {
+    order.items.forEach((item) => {
+      const key = item.plant.name;
+      const current = productSalesMap.get(key) || 0;
+      productSalesMap.set(key, current + item.quantity);
+    });
+  });
+
+  const allProducts = rawAllProducts.map(p => ({
+    ...p,
+    sold: productSalesMap.get(p.name) || 0
+  }));
 
   const filteredPlants = allProducts
     .filter((plant) => {
