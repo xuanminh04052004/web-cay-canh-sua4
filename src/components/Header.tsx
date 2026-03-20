@@ -1,8 +1,14 @@
-import { Search, ShoppingCart, MessageCircle, Menu, X } from "lucide-react";
+import { Search, ShoppingCart, MessageCircle, Menu, X, User, LogOut, Store } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useAdmin } from "@/contexts/AdminContext";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import NotificationBell from "./NotificationBell";
+import SearchDropdown from "./SearchDropdown";
 
 const navLinks = [
   { name: "Trang chủ", path: "/" },
@@ -16,6 +22,19 @@ const Header = () => {
   const { getTotalItems, setIsCartOpen } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+  const { isAdminLoggedIn, logoutAdmin } = useAdmin();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: 'Đã đăng xuất',
+      description: 'Hẹn gặp lại bạn!',
+    });
+    navigate('/');
+  };
 
   return (
     <>
@@ -61,6 +80,10 @@ const Header = () => {
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
+            <SearchDropdown variant="page" />
+            
+            <NotificationBell />
+
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
@@ -74,6 +97,91 @@ const Header = () => {
                 </span>
               )}
             </motion.button>
+            
+            {/* Seller Center Button */}
+            {isAuthenticated && user?.role === 'seller' && (
+              <Link to="/seller">
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn-icon"
+                  title="Seller Center"
+                >
+                  <Store className="w-5 h-5 text-foreground" />
+                </motion.button>
+              </Link>
+            )}
+            
+            {/* User Account Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn-icon flex items-center gap-2"
+                >
+                  <User className="w-5 h-5 text-foreground" />
+                  {isAuthenticated && user?.name && (
+                    <span className="hidden lg:inline text-sm font-medium text-foreground max-w-[100px] truncate">
+                      {user.name.split(' ').pop()}
+                    </span>
+                  )}
+                  {isAdminLoggedIn && (
+                    <span className="hidden lg:inline text-sm font-medium text-foreground">
+                      Admin
+                    </span>
+                  )}
+                </motion.button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                {isAuthenticated ? (
+                  <>
+                    <div className="px-2 py-1.5">
+                      <p className="text-sm font-medium">{user?.name}</p>
+                      <p className="text-xs text-muted-foreground">{user?.email}</p>
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/account')}>
+                      <User className="w-4 h-4 mr-2" />
+                      Tài khoản của tôi
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Đăng xuất
+                    </DropdownMenuItem>
+                  </>
+                ) : isAdminLoggedIn ? (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <Store className="w-4 h-4 mr-2" />
+                      Trang admin
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        logoutAdmin();
+                        toast({ title: "Đã đăng xuất Admin!" });
+                        navigate("/");
+                      }}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Đăng xuất Admin
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate('/login')}>
+                      Đăng nhập
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/register')}>
+                      Đăng ký
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <Link to="/contact">
               <motion.button
