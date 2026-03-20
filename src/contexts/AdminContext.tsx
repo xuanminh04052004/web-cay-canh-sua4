@@ -8,7 +8,6 @@ import {
   updateOrderStatusWithFallback,
   deleteOrderWithStats,
 } from "@/lib/order-service";
-import { deleteUserOrder } from "@/data/user-orders";
 import { CartPlant } from "@/contexts/CartContext";
 
 export interface OrderItem {
@@ -364,10 +363,6 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     // Use synchronized delete to update stats
     deleteOrderWithStats(id.toString()).catch((err) => {
       console.warn("Failed to delete order with synchronized stats", err);
-    });
-    
-    deleteUserOrder(id.toString()).catch((err) => {
-      console.warn("Transitionally failed to delete user order in api", err);
     });
   };
 
