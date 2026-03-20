@@ -5,12 +5,14 @@ import { ShoppingCart, Menu, X, MessageCircle, Heart, User, LogOut, Store } from
 import { useCart } from "@/contexts/CartContext";
 import { useWishlist } from "@/contexts/WishlistContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdmin } from "@/contexts/AdminContext";
 import AIFloatingButton from "./AIFloatingButton";
 import SearchDropdown from "./SearchDropdown";
 import NotificationBell from "./NotificationBell";
 import greenieLogo from "@/assets/greenie-logo.jpg";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface PageLayoutProps {
   children: ReactNode;
@@ -35,6 +37,7 @@ const PageLayout = ({ children, showHero = true, heroImage, heroTitle, heroSubti
   const { getTotalItems, setIsCartOpen } = useCart();
   const { items: wishlistItems, setIsWishlistOpen } = useWishlist();
   const { user, isAuthenticated, logout } = useAuth();
+  const { isAdminLoggedIn, logoutAdmin } = useAdmin();
   const { toast } = useToast();
 
   // Parallax effect
@@ -161,6 +164,11 @@ const PageLayout = ({ children, showHero = true, heroImage, heroTitle, heroSubti
                       {user.name.split(' ').pop()}
                     </span>
                   )}
+                  {isAdminLoggedIn && (
+                    <span className="hidden lg:inline text-sm font-medium text-foreground">
+                      Admin
+                    </span>
+                  )}
                 </motion.button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -179,6 +187,25 @@ const PageLayout = ({ children, showHero = true, heroImage, heroTitle, heroSubti
                     <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                       <LogOut className="w-4 h-4 mr-2" />
                       Đăng xuất
+                    </DropdownMenuItem>
+                  </>
+                ) : isAdminLoggedIn ? (
+                  <>
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <Store className="w-4 h-4 mr-2" />
+                      Trang admin
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => {
+                        logoutAdmin();
+                        toast({ title: "Đã đăng xuất Admin!" });
+                        navigate("/");
+                      }}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Đăng xuất Admin
                     </DropdownMenuItem>
                   </>
                 ) : (
