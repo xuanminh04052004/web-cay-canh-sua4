@@ -285,6 +285,14 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       paymentStatus: newOrder.paymentStatus,
       note: newOrder.note,
       date: newOrder.date,
+    }).then((apiOrder) => {
+      // Cập nhật ID local với ID do MockAPI tạo ra, để các thao tác sau (sửa trạng thái, ngày) đồng bộ đúng
+      const apiId = Number(apiOrder.id);
+      if (apiId && apiId !== nextId) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === nextId ? { ...o, id: apiId } : o))
+        );
+      }
     }).catch((error) => {
       console.warn("AdminContext: cannot push order to mockapi", error);
     });
