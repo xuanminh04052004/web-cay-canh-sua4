@@ -29,6 +29,8 @@ import SellerRegister from "./pages/SellerRegister";
 import SellerCenter from "./pages/SellerCenter";
 import SellerShop from "./pages/SellerShop";
 import NotFound from "./pages/NotFound";
+import { trackClick } from "./lib/access-analytics";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
@@ -38,8 +40,14 @@ const ScrollToTop = () => {
   return null;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => {
+  useEffect(() => {
+    // Record a visit whenever the user loads the app
+    trackClick();
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <ScrollToTop />
       <AuthProvider>
@@ -81,6 +89,7 @@ const App = () => (
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
