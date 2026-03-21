@@ -49,6 +49,7 @@ const Admin = () => {
     deleteProduct,
     updateOrderStatus,
     updatePaymentStatus,
+    updateOrderDate,
     deleteOrder,
     isAdminLoggedIn,
     logoutAdmin,
@@ -545,7 +546,14 @@ const Admin = () => {
                             <option>Đã hủy</option>
                           </select>
                         </td>
-                        <td className="p-4 text-muted-foreground">{order.date}</td>
+                        <td className="p-4">
+                          <input
+                            type="date"
+                            value={order.date}
+                            onChange={(e) => updateOrderDate(order.id, e.target.value)}
+                            className="bg-transparent text-muted-foreground text-sm outline-none px-2 py-1 hover:bg-muted/50 focus:bg-muted/50 focus:border-primary rounded cursor-pointer transition-colors"
+                          />
+                        </td>
                         <td className="p-4 flex gap-2">
                           <button
                             onClick={() => setViewingOrder(order)}
