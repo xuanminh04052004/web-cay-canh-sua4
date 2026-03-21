@@ -3,6 +3,7 @@ import { Plant, fetchPlantsFromApi } from "@/data/plants";
 import {
   fetchOrdersFromApi,
   updateOrderInApi,
+  createOrderInApi,
 } from "@/data/orders";
 import {
   updateOrderStatusWithFallback,
@@ -140,8 +141,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
     const loadOrders = async () => {
       try {
         const ordersFromApi = await fetchOrdersFromApi();
-        setOrders(
-          ordersFromApi.map((o) => ({
+        const apiOrders = ordersFromApi.map((o) => ({
             id: Number(o.id),
             customerName: o.customerName,
             customerPhone: o.customerPhone,
@@ -162,8 +162,14 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
             date: o.date,
             note: o.note,
             transferProof: o.transferProof,
-          }))
-        );
+          }));
+
+        // Merge: use API orders as base, add any localStorage-only orders
+        setOrders((prevOrders) => {
+          const apiIds = new Set(apiOrders.map((o) => o.id));
+          const localOnlyOrders = prevOrders.filter((o) => !apiIds.has(o.id));
+          return [...apiOrders, ...localOnlyOrders];
+        });
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";
         console.error("AdminContext fetch orders error:", message);
@@ -259,7 +265,27 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       })
     );
 
-    // Order is pushed to MockAPI by UserContext, no need to push here to avoid duplication.
+    // Push đơn hàng lên MockAPI để lưu trữ lâu dài
+    createOrderInApi({
+      customerName: newOrder.customerName,
+      customerPhone: newOrder.customerPhone,
+      customerAddress: newOrder.customerAddress,
+      items: newOrder.items.map((item) => ({
+        plantId: item.plant.id,
+        plantName: item.plant.name,
+        quantity: item.quantity,
+        price: item.plant.price,
+      })),
+      total: newOrder.total,
+      status: newOrder.status,
+      paymentMethod: newOrder.paymentMethod,
+      paymentStatus: newOrder.paymentStatus,
+      note: newOrder.note,
+      transferProof: newOrder.transferProof,
+      date: newOrder.date,
+    }).catch((error) => {
+      console.warn("AdminContext: cannot push order to mockapi", error);
+    });
   };
 
   const updateOrderStatus = (id: number, status: Order["status"]) => {
