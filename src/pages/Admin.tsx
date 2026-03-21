@@ -34,8 +34,9 @@ import { useToast } from "@/hooks/use-toast";
 import RevenueChart from "@/components/admin/RevenueChart";
 import AdminSellers from "@/components/admin/AdminSellers";
 import SellerAnalytics from "@/components/admin/SellerAnalytics";
+import AccessChart from "@/components/admin/AccessChart";
 
-type TabType = "dashboard" | "products" | "orders" | "sellers" | "seller-analytics" | "analytics" | "settings";
+type TabType = "dashboard" | "products" | "orders" | "sellers" | "seller-analytics" | "analytics" | "access" | "settings";
 
 const Admin = () => {
   const { toast } = useToast();
@@ -95,6 +96,7 @@ const Admin = () => {
     { id: "sellers" as TabType, label: "Sellers", icon: Store },
     { id: "seller-analytics" as TabType, label: "Thống kê Seller", icon: TrendingUp },
     { id: "analytics" as TabType, label: "Phân tích", icon: BarChart3 },
+    { id: "access" as TabType, label: "Truy cập", icon: Search },
     { id: "settings" as TabType, label: "Cài đặt", icon: Settings },
   ];
 
@@ -661,6 +663,24 @@ const Admin = () => {
                   </div>
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* Access Tab */}
+          {activeTab === "access" && (
+            <motion.div
+              key="access"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="space-y-6"
+            >
+              <div>
+                <h1 className="text-display text-3xl text-foreground">Truy cập từ khóa</h1>
+                <p className="text-muted-foreground mt-1">Thống kê lượt truy cập khi gõ từ khóa tìm kiếm</p>
+              </div>
+
+              <AccessChart />
             </motion.div>
           )}
 
