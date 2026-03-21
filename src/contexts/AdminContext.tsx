@@ -165,11 +165,14 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
           }));
 
         // Merge: use API orders as base, add any localStorage-only orders
-        setOrders((prevOrders) => {
-          const apiIds = new Set(apiOrders.map((o) => o.id));
-          const localOnlyOrders = prevOrders.filter((o) => !apiIds.has(o.id));
-          return [...apiOrders, ...localOnlyOrders];
-        });
+        // Only merge if API returned actual data
+        if (apiOrders.length > 0) {
+          setOrders((prevOrders) => {
+            const apiIds = new Set(apiOrders.map((o) => o.id));
+            const localOnlyOrders = prevOrders.filter((o) => !apiIds.has(o.id));
+            return [...apiOrders, ...localOnlyOrders];
+          });
+        }
       } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error";
         console.error("AdminContext fetch orders error:", message);
@@ -265,7 +268,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       })
     );
 
-    // Push đơn hàng lên MockAPI để lưu trữ lâu dài
+    // Push đơn hàng lên MockAPI để lưu trữ lâu dài (không gửi transferProof vì quá lớn cho MockAPI)
     createOrderInApi({
       customerName: newOrder.customerName,
       customerPhone: newOrder.customerPhone,
@@ -281,7 +284,6 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       paymentMethod: newOrder.paymentMethod,
       paymentStatus: newOrder.paymentStatus,
       note: newOrder.note,
-      transferProof: newOrder.transferProof,
       date: newOrder.date,
     }).catch((error) => {
       console.warn("AdminContext: cannot push order to mockapi", error);
