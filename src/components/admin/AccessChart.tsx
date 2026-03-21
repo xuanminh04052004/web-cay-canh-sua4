@@ -3,25 +3,25 @@ import { useState, useEffect } from 'react';
 import { getAccessStats } from '@/lib/access-analytics';
 
 const baseMockData = [
-  { date: '14 thg 2, 2026', clicks: 0, impressions: 0 },
-  { date: '16 thg 2, 2026', clicks: 0, impressions: 0 },
-  { date: '18 thg 2, 2026', clicks: 0, impressions: 0 },
-  { date: '20 thg 2, 2026', clicks: 0, impressions: 0 },
-  { date: '22 thg 2, 2026', clicks: 0, impressions: 0 },
-  { date: '24 thg 2, 2026', clicks: 0, impressions: 0 },
-  { date: '28 thg 2, 2026', clicks: 0, impressions: 0 },
-  { date: '1 thg 3, 2026', clicks: 100, impressions: 1500 },
-  { date: '3 thg 3, 2026', clicks: 130, impressions: 2200 },
-  { date: '5 thg 3, 2026', clicks: 250, impressions: 3800 },
-  { date: '7 thg 3, 2026', clicks: 10, impressions: 100 },
-  { date: '9 thg 3, 2026', clicks: 5, impressions: 50 },
-  { date: '11 thg 3, 2026', clicks: 80, impressions: 1700 },
-  { date: '12 thg 3, 2026', clicks: 0, impressions: 0 },
-  { date: '15 thg 3, 2026', clicks: 0, impressions: 0 },
+  { date: '7 thg 3', clicks: 0, impressions: 0 },
+  { date: '8 thg 3', clicks: 0, impressions: 0 },
+  { date: '9 thg 3', clicks: 0, impressions: 0 },
+  { date: '10 thg 3', clicks: 0, impressions: 0 },
+  { date: '11 thg 3', clicks: 0, impressions: 0 },
+  { date: '12 thg 3', clicks: 0, impressions: 0 },
+  { date: '13 thg 3', clicks: 10, impressions: 30 },
+  { date: '14 thg 3', clicks: 15, impressions: 45 },
+  { date: '15 thg 3', clicks: 28, impressions: 75 },
+  { date: '16 thg 3', clicks: 32, impressions: 90 },
+  { date: '17 thg 3', clicks: 27, impressions: 66 },
+  { date: '18 thg 3', clicks: 22, impressions: 54 },
+  { date: '19 thg 3', clicks: 2, impressions: 48 },
+  { date: '20 thg 3', clicks: 14, impressions: 42 },
+  { date: 'Hôm nay', clicks: 8, impressions: 23 },
 ];
 
 const AccessChart = () => {
-  const [stats, setStats] = useState({ clicks: 158, impressions: 473 });
+  const [stats, setStats] = useState({ clicks: 174, impressions: 473 });
 
   useEffect(() => {
     const loadStats = () => {
@@ -38,9 +38,8 @@ const AccessChart = () => {
   const lastIndex = chartData.length - 1;
   chartData[lastIndex] = {
     ...chartData[lastIndex],
-    clicks: stats.clicks,
-    impressions: stats.impressions,
-    date: 'Hôm nay'
+    clicks: chartData[lastIndex].clicks + (stats.clicks - 174),
+    impressions: chartData[lastIndex].impressions + (stats.impressions - 473),
   };
 
   const totalClicksStr = new Intl.NumberFormat('vi-VN').format(stats.clicks);
@@ -72,26 +71,20 @@ const AccessChart = () => {
           <div className="text-xs mb-1 opacity-90 font-medium">▾ Lần nhấp</div>
           <div className="text-3xl font-normal">{totalClicksStr}</div>
         </div>
-        <div className="w-[180px] p-4 bg-[#d93025] text-white shrink-0">
+        <div className="w-[180px] p-4 bg-[#d93025] text-white shrink-0 border-r border-border">
           <div className="text-xs mb-1 opacity-90 font-medium">▾ Lượt hiển thị</div>
           <div className="text-3xl font-normal">{totalImpressionsStr}</div>
         </div>
+        <div className="px-6 py-4 bg-card text-foreground shrink-0 border-r border-border min-w-[140px]">
+          <div className="text-xs mb-1 text-muted-foreground font-medium">▾ CPC Tr.bình</div>
+          <div className="text-3xl font-normal">0 <span className="text-xl underline decoration-1 text-muted-foreground/70">đ</span></div>
+        </div>
+        <div className="px-6 py-4 bg-card text-foreground shrink-0 border-r border-border min-w-[140px]">
+          <div className="text-xs mb-1 text-muted-foreground font-medium">▾ Chi phí</div>
+          <div className="text-3xl font-normal">0 <span className="text-xl underline decoration-1 text-muted-foreground/70">đ</span></div>
+        </div>
         {/* Fill the rest with white/card background to match Google Ads style */}
-        <div className="flex-1 bg-card flex items-center justify-end px-6 border-l border-border">
-          <div className="flex items-center gap-6 text-muted-foreground text-sm">
-            <button className="flex flex-col items-center gap-1 hover:text-foreground">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-              <span className="text-xs font-semibold">Chi số</span>
-            </button>
-            <button className="flex flex-col items-center gap-1 hover:text-foreground">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-              <span className="text-xs font-semibold">Điều chỉnh</span>
-            </button>
-          </div>
+        <div className="flex-1 bg-card flex items-center justify-end px-6">
         </div>
       </div>
 
