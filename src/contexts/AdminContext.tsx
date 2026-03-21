@@ -42,6 +42,7 @@ interface AdminContextType {
   addOrder: (order: Omit<Order, "date">) => void;
   updateOrderStatus: (id: number, status: Order["status"]) => void;
   updatePaymentStatus: (id: number, status: Order["paymentStatus"]) => void;
+  updateOrderDate: (id: number, date: string) => void;
   deleteOrder: (id: number) => void;
   isAdminLoggedIn: boolean;
   loginAdmin: (email: string, password: string) => boolean;
@@ -357,6 +358,22 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       });
   };
 
+  const updateOrderDate = (id: number, date: string) => {
+    setOrders((prev) =>
+      prev.map((o) => {
+        if (o.id === id) {
+          return { ...o, date };
+        }
+        return o;
+      })
+    );
+
+    updateOrderInApi(id.toString(), { date })
+      .catch((error) => {
+        console.warn("AdminContext: cannot update order date to mockapi", error);
+      });
+  };
+
   const deleteOrder = (id: number) => {
     setOrders((prev) => prev.filter((o) => o.id !== id));
     
@@ -379,6 +396,7 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
         addOrder,
         updateOrderStatus,
         updatePaymentStatus,
+        updateOrderDate,
         deleteOrder,
         isAdminLoggedIn,
         loginAdmin,
