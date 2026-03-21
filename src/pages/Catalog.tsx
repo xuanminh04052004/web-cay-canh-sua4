@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Star, ShoppingCart, Filter, Search, X, Droplets, Sun, Thermometer, Wind, Eye, SlidersHorizontal, ChevronDown, Store } from "lucide-react";
 import PageLayout from "@/components/PageLayout";
@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { categories, formatPrice, Plant } from "@/data/plants";
 import { searchMatch } from "@/lib/searchUtils";
 import { Badge } from "@/components/ui/badge";
+import { trackImpression, trackClick } from "@/lib/access-analytics";
 
 const priceRanges = [
   { label: "Tất cả giá", min: 0, max: Infinity },
@@ -162,6 +163,15 @@ const Catalog = () => {
           return 0;
       }
     });
+
+  useEffect(() => {
+    if (searchQuery.trim() && filteredPlants.length > 0) {
+      const timeoutId = setTimeout(() => {
+        trackImpression();
+      }, 1000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchQuery, filteredPlants.length]);
 
   const handleAddToCart = (plant: typeof allProducts[0]) => {
     addToCart({
@@ -447,7 +457,10 @@ const Catalog = () => {
                         <Heart className={`w-4 h-4 ${isInWishlist(plant.id) ? "fill-current" : ""}`} />
                       </button>
                       <button 
-                        onClick={() => setSelectedPlant(plant)}
+                        onClick={() => {
+                          trackClick();
+                          setSelectedPlant(plant);
+                        }}
                         className="p-2 bg-card/90 rounded-full hover:bg-primary hover:text-white transition-colors"
                         title="Xem chi tiết"
                       >
@@ -460,7 +473,10 @@ const Catalog = () => {
                   <div className="p-4">
                     <h3 
                       className="text-foreground font-medium mb-2 cursor-pointer hover:text-primary transition-colors line-clamp-1"
-                      onClick={() => setSelectedPlant(plant)}
+                      onClick={() => {
+                        trackClick();
+                        setSelectedPlant(plant);
+                      }}
                     >
                       {plant.name}
                     </h3>
