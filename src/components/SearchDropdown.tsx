@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAdmin } from "@/contexts/AdminContext";
 import { formatPrice } from "@/data/plants";
+import { trackImpression, trackClick } from "@/lib/access-analytics";
 
 interface SearchDropdownProps {
   isScrolled?: boolean;
@@ -40,6 +41,16 @@ const SearchDropdown = ({ isScrolled = false, variant = "landing" }: SearchDropd
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  // Track impression if query generates results
+  useEffect(() => {
+    if (isOpen && query.trim() && filteredProducts.length > 0) {
+      const timeoutId = setTimeout(() => {
+        trackImpression();
+      }, 1000); // 1-second debounce for impressions
+      return () => clearTimeout(timeoutId);
+    }
+  }, [query, isOpen, filteredProducts.length]);
 
   const handleOpen = () => {
     setIsOpen(true);
@@ -107,7 +118,10 @@ const SearchDropdown = ({ isScrolled = false, variant = "landing" }: SearchDropd
                   <Link
                     key={product.id}
                     to={`/product/${product.id}`}
-                    onClick={handleClose}
+                    onClick={() => {
+                      trackClick();
+                      handleClose();
+                    }}
                     className="flex items-center gap-3 px-4 py-3 hover:bg-muted transition-colors"
                   >
                     <img
@@ -126,7 +140,10 @@ const SearchDropdown = ({ isScrolled = false, variant = "landing" }: SearchDropd
                 ))}
                 <Link
                   to={`/catalog?search=${encodeURIComponent(query)}`}
-                  onClick={handleClose}
+                  onClick={() => {
+                    trackClick();
+                    handleClose();
+                  }}
                   className="block px-4 py-3 text-center text-sm text-primary hover:bg-primary/10 transition-colors border-t border-border"
                 >
                   Xem tất cả kết quả
