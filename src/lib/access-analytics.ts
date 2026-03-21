@@ -6,7 +6,7 @@ export const getAccessStats = () => {
   
   // Default specified by user
   const defaultStats = {
-    clicks: 158,
+    clicks: 174,
     impressions: 473
   };
   localStorage.setItem('access_stats', JSON.stringify(defaultStats));
