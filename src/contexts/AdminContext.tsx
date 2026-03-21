@@ -9,6 +9,7 @@ import {
   updateOrderStatusWithFallback,
   deleteOrderWithStats,
 } from "@/lib/order-service";
+import { compressImage } from "@/lib/image-utils";
 import { CartPlant } from "@/contexts/CartContext";
 
 export interface OrderItem {
@@ -268,32 +269,47 @@ export const AdminProvider = ({ children }: { children: ReactNode }) => {
       })
     );
 
-    // Push đơn hàng lên MockAPI để lưu trữ lâu dài (không gửi transferProof vì quá lớn cho MockAPI)
-    createOrderInApi({
-      customerName: newOrder.customerName,
-      customerPhone: newOrder.customerPhone,
-      customerAddress: newOrder.customerAddress,
-      items: newOrder.items.map((item) => ({
-        plantId: item.plant.id,
-        plantName: item.plant.name,
-        quantity: item.quantity,
-        price: item.plant.price,
-      })),
-      total: newOrder.total,
-      status: newOrder.status,
-      paymentMethod: newOrder.paymentMethod,
-      paymentStatus: newOrder.paymentStatus,
-      note: newOrder.note,
-      date: newOrder.date,
-    }).then((apiOrder) => {
-      // Cập nhật ID local với ID do MockAPI tạo ra, để các thao tác sau (sửa trạng thái, ngày) đồng bộ đúng
+    // Push đơn hàng lên MockAPI để lưu trữ lâu dài
+    // Nén ảnh minh chứng CK trước khi gửi (nếu có)
+    const pushToApi = async () => {
+      let compressedProof: string | undefined;
+      if (newOrder.transferProof) {
+        try {
+          compressedProof = await compressImage(newOrder.transferProof, 400, 0.5);
+        } catch {
+          compressedProof = undefined;
+        }
+      }
+
+      const apiOrder = await createOrderInApi({
+        customerName: newOrder.customerName,
+        customerPhone: newOrder.customerPhone,
+        customerAddress: newOrder.customerAddress,
+        items: newOrder.items.map((item) => ({
+          plantId: item.plant.id,
+          plantName: item.plant.name,
+          quantity: item.quantity,
+          price: item.plant.price,
+        })),
+        total: newOrder.total,
+        status: newOrder.status,
+        paymentMethod: newOrder.paymentMethod,
+        paymentStatus: newOrder.paymentStatus,
+        note: newOrder.note,
+        transferProof: compressedProof,
+        date: newOrder.date,
+      });
+
+      // Cập nhật ID local với ID do MockAPI tạo ra
       const apiId = Number(apiOrder.id);
       if (apiId && apiId !== nextId) {
         setOrders((prev) =>
           prev.map((o) => (o.id === nextId ? { ...o, id: apiId } : o))
         );
       }
-    }).catch((error) => {
+    };
+
+    pushToApi().catch((error) => {
       console.warn("AdminContext: cannot push order to mockapi", error);
     });
   };
