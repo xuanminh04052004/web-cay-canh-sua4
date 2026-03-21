@@ -36,10 +36,14 @@ const AccessChart = () => {
 
   const chartData = [...baseMockData];
   const lastIndex = chartData.length - 1;
+  
+  const previousClicks = chartData.slice(0, lastIndex).reduce((sum, item) => sum + item.clicks, 0);
+  const previousImpressions = chartData.slice(0, lastIndex).reduce((sum, item) => sum + item.impressions, 0);
+
   chartData[lastIndex] = {
     ...chartData[lastIndex],
-    clicks: chartData[lastIndex].clicks + (stats.clicks - 174),
-    impressions: chartData[lastIndex].impressions + (stats.impressions - 473),
+    clicks: Math.max(0, stats.clicks - previousClicks),
+    impressions: Math.max(0, stats.impressions - previousImpressions),
   };
 
   const totalClicksStr = new Intl.NumberFormat('vi-VN').format(stats.clicks);
