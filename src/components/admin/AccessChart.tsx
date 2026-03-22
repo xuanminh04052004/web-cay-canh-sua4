@@ -1,27 +1,44 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
-import { getAccessStats } from '@/lib/access-analytics';
+import { getAccessStats, getDailyStats, getTodayKey, type AccessStatsData } from '@/lib/access-analytics';
 
-const baseMockData = [
-  { date: '7 thg 3', clicks: 0, impressions: 0 },
-  { date: '8 thg 3', clicks: 0, impressions: 0 },
-  { date: '9 thg 3', clicks: 0, impressions: 0 },
-  { date: '10 thg 3', clicks: 0, impressions: 0 },
-  { date: '11 thg 3', clicks: 0, impressions: 0 },
-  { date: '12 thg 3', clicks: 0, impressions: 0 },
-  { date: '13 thg 3', clicks: 10, impressions: 30 },
-  { date: '14 thg 3', clicks: 15, impressions: 45 },
-  { date: '15 thg 3', clicks: 28, impressions: 75 },
-  { date: '16 thg 3', clicks: 32, impressions: 90 },
-  { date: '17 thg 3', clicks: 27, impressions: 66 },
-  { date: '18 thg 3', clicks: 22, impressions: 54 },
-  { date: '19 thg 3', clicks: 2, impressions: 48 },
-  { date: '20 thg 3', clicks: 14, impressions: 42 },
-  { date: 'Hôm nay', clicks: 8, impressions: 23 },
-];
+/** Format a YYYY-MM-DD key into Vietnamese short date like "22 thg 3" */
+const formatDateLabel = (dateKey: string): string => {
+  const [, monthStr, dayStr] = dateKey.split('-');
+  const day = parseInt(dayStr, 10);
+  const month = parseInt(monthStr, 10);
+  return `${day} thg ${month}`;
+};
+
+/** Generate chart data for the last N days ending today */
+const generateChartData = (dailyStats: Record<string, { clicks: number; impressions: number }>, days: number = 15) => {
+  const todayKey = getTodayKey();
+  const today = new Date();
+  const data: { date: string; clicks: number; impressions: number }[] = [];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const key = `${y}-${m}-${dd}`;
+
+    const entry = dailyStats[key] || { clicks: 0, impressions: 0 };
+    const label = key === todayKey ? 'Hôm nay' : formatDateLabel(key);
+
+    data.push({
+      date: label,
+      clicks: entry.clicks,
+      impressions: entry.impressions,
+    });
+  }
+
+  return data;
+};
 
 const AccessChart = () => {
-  const [stats, setStats] = useState({ clicks: 174, impressions: 473 });
+  const [stats, setStats] = useState<AccessStatsData>(() => getAccessStats());
 
   useEffect(() => {
     const loadStats = () => {
@@ -34,17 +51,7 @@ const AccessChart = () => {
     return () => window.removeEventListener('access_stats_updated', loadStats);
   }, []);
 
-  const chartData = [...baseMockData];
-  const lastIndex = chartData.length - 1;
-  
-  const previousClicks = chartData.slice(0, lastIndex).reduce((sum, item) => sum + item.clicks, 0);
-  const previousImpressions = chartData.slice(0, lastIndex).reduce((sum, item) => sum + item.impressions, 0);
-
-  chartData[lastIndex] = {
-    ...chartData[lastIndex],
-    clicks: Math.max(0, stats.clicks - previousClicks),
-    impressions: Math.max(0, stats.impressions - previousImpressions),
-  };
+  const chartData = generateChartData(stats.dailyStats || {}, 15);
 
   const totalClicksStr = new Intl.NumberFormat('vi-VN').format(stats.clicks);
   const totalImpressionsStr = stats.impressions >= 1000 
@@ -111,7 +118,7 @@ const AccessChart = () => {
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                domain={[0, 400]}
+                domain={[0, 'auto']}
                 tickCount={3}
               />
               <YAxis 
@@ -121,7 +128,7 @@ const AccessChart = () => {
                 tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
-                domain={[0, 4000]}
+                domain={[0, 'auto']}
                 tickCount={3}
               />
               <Tooltip content={<CustomTooltip />} />
